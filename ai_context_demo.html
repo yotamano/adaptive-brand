@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Context Understanding Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #three-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .terminal-text {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .terminal-text.visible {
+            opacity: 1;
+        }
+        
+        .terminal-header {
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #cccccc;
+        }
+        
+        .terminal-line {
+            margin: 2px 0;
+            white-space: nowrap;
+        }
+        
+        .terminal-prompt {
+            color: #888;
+        }
+        
+        .terminal-value {
+            color: #ffffff;
+        }
+        
+        .left-panel {
+            left: 30px;
+            top: 100px;
+            width: 300px;
+        }
+        
+        .right-panel {
+            right: 30px;
+            top: 100px;
+            width: 300px;
+        }
+        
+        .bottom-left-panel {
+            left: 30px;
+            bottom: 80px;
+            width: 300px;
+        }
+        
+        .bottom-right-panel {
+            right: 30px;
+            bottom: 80px;
+            width: 300px;
+        }
+        
+        .reveal-animation {
+            position: absolute;
+            background: #ffffff;
+            opacity: 0;
+            animation: revealText 0.8s ease-out forwards;
+        }
+        
+        @keyframes revealText {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+        }
+        
+        .title {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #fff;
+            letter-spacing: 3px;
+            z-index: 20;
+        }
+        
+        .user-id {
+            position: absolute;
+            top: 52px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #888;
+            z-index: 20;
+        }
+        
+        .mode-indicator {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #00ff41;
+            z-index: 20;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #666;
+            z-index: 20;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #444;
+            text-align: center;
+            z-index: 20;
+        }
+        
+        .scenario-indicator {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: #ffffff;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .scenario-indicator.visible {
+            opacity: 1;
+        }
+        
+        .cursor {
+            display: inline-block;
+            background: #ffffff;
+            width: 8px;
+            height: 12px;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .ascii-art {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 8px;
+            color: #333;
+            line-height: 1;
+            z-index: 2;
+        }
+        
+        .data-stream {
+            position: absolute;
+            font-size: 8px;
+            color: #00ff41;
+            opacity: 0.3;
+            animation: stream 6s linear infinite;
+            z-index: 2;
+        }
+        
+        @keyframes stream {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100vw); }
+        }
+        
+        .transition-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 65, 0.05);
+            opacity: 0;
+            z-index: 15;
+            transition: opacity 0.3s ease;
+        }
+        
+        .transition-flash.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="three-container"></div>
+        
+        <div id="ui-overlay">
+            <!-- Title -->
+            <div class="title">AI.CONTEXT.ANALYSIS</div>
+            <div class="user-id">USER_ID: AMINA_PARIS_7829</div>
+            <div class="mode-indicator" id="mode-indicator">STATIC.PROFILE.MODE</div>
+            
+            <!-- Terminal Panels -->
+            <div class="terminal-text left-panel" id="left-panel">
+                <div class="terminal-header">DEMOGRAPHICS.DAT</div>
+                <div id="left-content"></div>
+            </div>
+            
+            <div class="terminal-text right-panel" id="right-panel">
+                <div class="terminal-header">IDENTITY.DAT</div>
+                <div id="right-content"></div>
+            </div>
+            
+            <div class="terminal-text bottom-left-panel" id="bottom-left-panel">
+                <div class="terminal-header">CONTEXT.DAT</div>
+                <div id="bottom-left-content"></div>
+            </div>
+            
+            <div class="terminal-text bottom-right-panel" id="bottom-right-panel">
+                <div class="terminal-header">BEHAVIOR.DAT</div>
+                <div id="bottom-right-content"></div>
+            </div>
+            
+            <!-- Scenario indicator -->
+            <div class="scenario-indicator" id="scenario-indicator">WORKING.ALONE.FOCUSED</div>
+            
+            <!-- Status bar -->
+            <div class="status-bar" id="status-bar">BUILDING.STATIC.PROFILE...</div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                SPACE: SWITCH.MODE • 1-4: SCENARIOS<span class="cursor"></span>
+            </div>
+            
+            <!-- Transition flash -->
+            <div class="transition-flash" id="transition-flash"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script src="SkinnedPointCloudShader.js"></script>
+    <script>
+        // Three.js setup
+        let scene, camera, renderer, figure, mixer;
+        let loadedAnimations = {};
+        let currentAnimation = null;
+        let clock = new THREE.Clock();
+        let currentMode = 'static';
+        let currentScenario = 0;
+        
+        // Animation file mappings
+        const animationFiles = {
+            idle: '3D animations/Standing W_Briefcase Idle.fbx',
+            working: '3D animations/Sitting Talking.fbx',
+            social: '3D animations/Sitting Laughing.fbx', 
+            walking: '3D animations/Sitting Talking.fbx', // Fallback until we get a walking animation
+            tired: '3D animations/Laying Hand Gesture.fbx'
+        };
+        
+        function initThreeJS() {
+            const container = document.getElementById('three-container');
+            
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, 4); // Moved further away from the figure
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+            
+            // Load FBX models and animations
+            loadFBXAnimations();
+            
+            // Lighting optimized for point clouds
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0x00ff41, 0.4);
+            directionalLight.position.set(2, 4, 5);
+            scene.add(directionalLight);
+            
+            const backLight = new THREE.DirectionalLight(0x666666, 0.3);
+            backLight.position.set(-2, 2, -3);
+            scene.add(backLight);
+            
+            animate();
+        }
+        
+        function loadFBXAnimations() {
+            const loader = new THREE.FBXLoader();
+            const loadPromises = [];
+            
+            // Create a custom loading manager that completely skips texture loading
+            const customManager = new THREE.LoadingManager();
+            customManager.setURLModifier((url) => {
+                // Block texture file loading entirely
+                if (url.includes('texture_diffuse') || 
+                    url.includes('texture_normal') || 
+                    url.includes('.fbm/') ||
+                    url.includes('.jpg') || 
+                    url.includes('.png') || 
+                    url.includes('.jpeg')) {
+                    console.log(`Blocking texture load: ${url.split('/').pop()}`);
+                    // Return a data URL for a 1x1 transparent pixel to prevent errors
+                    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+                }
+                return url;
+            });
+            
+            // Apply the custom manager to the loader
+            loader.manager = customManager;
+            
+            // Track if any models were successfully loaded
+            let loadedCount = 0;
+            let attemptedCount = 0;
+            
+            // Load each animation
+            Object.entries(animationFiles).forEach(([animName, filePath]) => {
+                const promise = new Promise((resolve, reject) => {
+                    attemptedCount++;
+                    
+                    // Try to load the FBX file
+                    loader.load(
+                        filePath,
+                        (fbx) => {
+                            // Don't scale here - we'll scale in setAnimation
+                            fbx.position.set(0, 0, 0); // Center position
+                            
+                            // Apply point cloud material while preserving skeleton
+                            fbx.traverse((child) => {
+                                if (child.isMesh) {
+                                    // Dispose of any existing materials
+                                    if (child.material) {
+                                        if (Array.isArray(child.material)) {
+                                            child.material.forEach(mat => mat.dispose());
+                                        } else {
+                                            child.material.dispose();
+                                        }
+                                    }
+                                    
+                                    // Replace skinned mesh with animated point cloud (white)
+                                    const pc = createSkinnedPointCloud(child, { size: 2.0, color: 0xffffff, skip: 50 }); // Increased skip value to reduce points
+                                    child.parent.add(pc);
+                                    child.parent.remove(child);
+                                }
+                            });
+                            
+                            // Store the model and its animations
+                            loadedAnimations[animName] = {
+                                model: fbx,
+                                animations: fbx.animations
+                            };
+                            
+                            console.log(`✓ Loaded ${animName} with ${fbx.animations.length} animations`);
+                            console.log(`   Model bounds:`, fbx.geometry ? 'has geometry' : 'no direct geometry');
+                            console.log(`   Model children:`, fbx.children.length);
+                            loadedCount++;
+                            resolve();
+                        },
+                        (progress) => {
+                            console.log(`Loading ${animName}: ${(progress.loaded / progress.total * 100).toFixed(1)}%`);
+                        },
+                        (error) => {
+                            console.error(`Error loading ${animName}:`, error);
+                            // Create fallback simple geometry if FBX fails to load
+                            createFallbackFigure(animName);
+                            resolve(); // Resolve even on error, since we have a fallback
+                        }
+                    );
+                });
+                loadPromises.push(promise);
+            });
+            
+            // Wait for all animations to load, then start with idle
+            Promise.all(loadPromises).then(() => {
+                if (loadedCount === 0 && attemptedCount > 0) {
+                    console.warn('⚠️ No models loaded successfully. Using fallback wireframes for all animations.');
+                    alert('CORS Policy Blocked FBX Loading: Please run via a web server (e.g. http://localhost:8000) instead of file:// protocol.');
+                } else {
+                    console.log('🎉 All animations loaded successfully');
+                }
+                setAnimation('idle');
+            });
+        }
+        
+        function createFallbackFigure(animName) {
+            // Create a more sophisticated wireframe figure as fallback
+            const group = new THREE.Group();
+            
+            // Body - more complex for better visual
+            const bodyGeometry = new THREE.BoxGeometry(0.3, 0.6, 0.2);
+            const bodyMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ff41,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.5
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.5; // Position at bottom center of the figure
+            group.add(body);
+            
+            // Head
+            const headGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+            const headMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ff41,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.5
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 0.95;
+            group.add(head);
+            
+            // Arms
+            const armGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4);
+            const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
+            leftArm.position.set(0.25, 0.6, 0);
+            leftArm.rotation.z = -Math.PI / 3; // Angle arm outward
+            group.add(leftArm);
+            
+            const rightArm = new THREE.Mesh(armGeometry, bodyMaterial);
+            rightArm.position.set(-0.25, 0.6, 0);
+            rightArm.rotation.z = Math.PI / 3;
+            group.add(rightArm);
+            
+            // Legs
+            const legGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.5);
+            const leftLeg = new THREE.Mesh(legGeometry, bodyMaterial);
+            leftLeg.position.set(0.1, 0.05, 0);
+            group.add(leftLeg);
+            
+            const rightLeg = new THREE.Mesh(legGeometry, bodyMaterial);
+            rightLeg.position.set(-0.1, 0.05, 0);
+            group.add(rightLeg);
+            
+            // Add point particles for the cloud effect during transitions
+            const particleCount = 200;
+            const particles = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount; i++) {
+                const x = (Math.random() - 0.5) * 0.5;
+                const y = Math.random() * 1.2;
+                const z = (Math.random() - 0.5) * 0.5;
+                
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+            }
+            
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const particleMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime: { value: 0 },
+                    uScatter: { value: 0 },
+                    size: { value: 2.0 },
+                    diffuse: { value: new THREE.Color(0x00ff41) }
+                },
+                vertexShader: `
+                    uniform float size;
+                    uniform float uTime;
+                    uniform float uScatter;
+                    
+                    void main() {
+                        // Basic position
+                        vec3 pos = position;
+                        
+                        // Add gentle movement
+                        pos.x += sin(uTime + position.y * 10.0) * 0.02;
+                        pos.z += cos(uTime + position.x * 10.0) * 0.02;
+                        
+                        // Apply scatter effect
+                        vec3 dir = normalize(vec3(
+                            sin(position.y * 4.0 + uTime),
+                            cos(position.x * 4.0 + uTime),
+                            sin(position.z * 4.0 + position.x * 4.0)
+                        ));
+                        
+                        vec3 scattered = pos + dir * 2.0;
+                        vec3 finalPos = mix(pos, scattered, uScatter);
+                        
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(finalPos, 1.0);
+                        gl_PointSize = size;
+                    }
+                `,
+                fragmentShader: `
+                    uniform vec3 diffuse;
+                    void main() {
+                        float dist = length(gl_PointCoord - vec2(0.5));
+                        if (dist > 0.5) discard;
+                        gl_FragColor = vec4(diffuse, 1.0);
+                    }
+                `,
+                transparent: true,
+                depthWrite: false
+            });
+            
+            const pointCloud = new THREE.Points(particles, particleMaterial);
+            group.add(pointCloud);
+            
+            // Create fake animation clips
+            const fakeDuration = 2;
+            const fakeKeyframes = [];
+            const fakeTimes = [0, fakeDuration];
+            
+            // Create different movement for different animation types
+            let values;
+            switch(animName) {
+                case 'idle':
+                    // Small up and down motion
+                    values = [0, 0, 0, 0, 0.05, 0];
+                    break;
+                case 'working':
+                    // Nodding/typing motion
+                    values = [0, 0, 0, 0.1, -0.1, 0];
+                    break;
+                case 'social':
+                    // Animated gesture
+                    values = [0, 0, 0, 0.15, 0.05, 0.15];
+                    break;
+                case 'walking':
+                    // Subtle forward motion
+                    values = [0, 0, 0, 0, 0.1, 0.1];
+                    break;
+                case 'tired':
+                    // Slouching motion
+                    values = [0, 0, 0, 0.05, -0.15, 0];
+                    break;
+                default:
+                    values = [0, 0, 0, 0, 0, 0];
+            }
+            
+            const posTrack = new THREE.VectorKeyframeTrack(
+                '.position',
+                fakeTimes,
+                values
+            );
+            
+            const rotValues = [0, 0, 0, 0.1, 0, 0.1];
+            const rotTrack = new THREE.VectorKeyframeTrack(
+                '.rotation',
+                fakeTimes,
+                rotValues
+            );
+            
+            fakeKeyframes.push(posTrack);
+            fakeKeyframes.push(rotTrack);
+            
+            const clip = new THREE.AnimationClip(`fallback_${animName}`, fakeDuration, fakeKeyframes);
+            
+            loadedAnimations[animName] = {
+                model: group,
+                animations: [clip]
+            };
+        }
+        
+        function setAnimation(animationType) {
+            if (!loadedAnimations[animationType]) {
+                console.warn(`Animation ${animationType} not loaded yet - using fallback if available`);
+                // Try to use idle as fallback if available
+                if (loadedAnimations['idle']) {
+                    animationType = 'idle';
+                } else {
+                    // If we can't find any animation, create a fallback on the fly
+                    createFallbackFigure(animationType);
+                }
+            }
+
+            // Remove previous figure if it exists
+            if (figure && figure.parent) {
+                scene.remove(figure);
+            }
+
+            // Stop and dispose previous mixer
+            if (mixer) {
+                mixer.stopAllAction();
+                mixer = null;
+            }
+
+            // Use ORIGINAL model instance to retain skeleton links
+            const animData = loadedAnimations[animationType];
+            figure = animData.model;
+
+            // Uniform scale & position
+            figure.scale.setScalar(1.3);
+            figure.position.set(0, -1, 0);
+
+            // Add to scene (ensure not already added)
+            if (!figure.parent) {
+                scene.add(figure);
+            }
+
+            // Create a fresh mixer for this figure
+            if (animData.animations && animData.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(figure);
+
+                const clip = animData.animations[0];
+                const action = mixer.clipAction(clip);
+                action.reset();
+                action.setLoop(THREE.LoopRepeat);
+                action.play();
+
+                currentAnimation = action;
+            } else {
+                console.warn(`No animation clips found for ${animationType}`);
+            }
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const delta = clock.getDelta();
+            
+            // Update animation mixer
+            if (mixer) {
+                mixer.update(delta);
+            }
+            
+            // Subtle camera movement
+            const time = Date.now() * 0.0002;
+            camera.position.x = Math.sin(time) * 0.03; // Reduced horizontal movement
+            camera.position.y = 0 + Math.sin(time * 0.3) * 0.02; // Tiny vertical movement
+            camera.position.z = 4 + Math.sin(time * 0.5) * 0.05; // Keep frontal position with minimal forward/back
+            if (figure) {
+                camera.lookAt(figure.position);
+            }
+            
+            // Update time uniform for both point clouds and fallback particles
+            if (figure) {
+                const t = clock.getElapsedTime();
+                
+                figure.traverse((child) => {
+                    // Update shader uniforms for any material with uniforms
+                    if (child.material && child.material.uniforms) {
+                        // Update time for animation
+                        if (child.material.uniforms.uTime) {
+                            child.material.uniforms.uTime.value = t;
+                        }
+                    }
+                });
+            }
+
+            renderer.render(scene, camera);
+        }
+        
+        // Add easing helper for scatter transitions
+        function animateUniform(uniform, toValue, duration, easing, onComplete) {
+            const from = uniform.value;
+            const start = performance.now();
+            
+            // Easing functions
+            const easings = {
+                // Simple linear transition
+                linear: t => t,
+                // Cubic ease out for smoother ending
+                easeOut: t => 1 - Math.pow(1 - t, 3),
+                // Elastic-like effect with overshoot
+                elastic: t => {
+                    const p = 0.3;
+                    return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+                },
+                // Back ease out with slight overshoot
+                backOut: t => {
+                    const c1 = 1.70158;
+                    const c3 = c1 + 1;
+                    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+                }
+            };
+            
+            function step(now) {
+                const t = Math.min(1, (now - start) / duration);
+                const easedT = easings[easing] ? easings[easing](t) : t;
+                uniform.value = from + (toValue - from) * easedT;
+                
+                if (t < 1) {
+                    requestAnimationFrame(step);
+                } else if (onComplete) {
+                    onComplete();
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
+        function scatterFigure(fig, toVal, duration, onComplete) {
+            if (!fig) { onComplete && onComplete(); return; }
+            let handled = false;
+            
+            // Flash effect for transitions
+            if (toVal > 0) {
+                const flash = document.getElementById('transition-flash');
+                flash.classList.add('active');
+                setTimeout(() => flash.classList.remove('active'), 250);
+            }
+            
+            fig.traverse((child) => {
+                if (child.material && child.material.uniforms && child.material.uniforms.uScatter) {
+                    // Use elastic easing for more dramatic effect when scattering out
+                    // Use backOut for more natural feel when reforming
+                    const easing = toVal > 0.5 ? 'elastic' : 'backOut';
+                    
+                    animateUniform(
+                        child.material.uniforms.uScatter, 
+                        toVal, 
+                        duration, 
+                        easing, 
+                        () => {
+                            if (!handled) { 
+                                handled = true; 
+                                onComplete && onComplete(); 
+                            }
+                        }
+                    );
+                }
+            });
+        }
+
+        function transitionTo(animationType) {
+            // Check if animation exists and create fallback if needed
+            if (!loadedAnimations[animationType]) {
+                console.warn(`Animation ${animationType} not available - using fallback`);
+                createFallbackFigure(animationType);
+            }
+
+            if (!figure) { // first time
+                setAnimation(animationType);
+                scatterFigure(figure, 0, 400); // ensure scatter reset
+                return;
+            }
+            
+            const oldFig = figure;
+            
+            // Shorter scatter-out time for more subtle effect
+            scatterFigure(oldFig, 0.7, 600, () => {
+                // After scatter out, switch animation
+                setAnimation(animationType);
+                
+                // Start new figure partially scattered
+                scatterFigure(figure, 0.7, 0, () => { 
+                    // Reform over a shorter period for subtler effect
+                    scatterFigure(figure, 0, 800);
+                });
+                
+                if (oldFig.parent) oldFig.parent.remove(oldFig);
+            });
+        }
+        
+        // Terminal data
+        const staticData = {
+            left: [
+                "AGE................29",
+                "GENDER.............FEMALE", 
+                "HERITAGE...........MOROCCAN",
+                "LOCATION...........PARIS.10TH",
+                "PROFESSION.........EDITOR",
+                "INCOME.............MID.LEVEL",
+                "EDUCATION..........VISUAL.PHIL"
+            ],
+            right: [
+                "RELIGION...........MUSLIM",
+                "LANGUAGES..........FR.AR.EN",
+                "VALUES.............AUTHENTICITY",
+                "PHILOSOPHY.........INTIMACY.SOLITUDE",
+                "SOCIAL.............FEMINIST.COLLECTIVE",
+                "AESTHETIC..........MODEST.ARCHITECTURAL",
+                "MINDSET............JUSTICE.BEAUTY"
+            ]
+        };
+        
+        const dynamicScenarios = [
+            {
+                name: "WORKING.ALONE.FOCUSED",
+                animation: "working",
+                left: [
+                    "TIME...............23:47",
+                    "ACTIVITY...........DEEP.WORK",
+                    "LOCATION...........HOME.OFFICE",
+                    "AUDIO..............SHADOW.CITRUS",
+                    "BEVERAGE...........TEA.THIRD",
+                    "NOTIFICATIONS......DISABLED",
+                    "ENVIRONMENT........PRIVATE"
+                ],
+                right: [
+                    "FOCUS..............HIGH",
+                    "STRESS.............LOW",
+                    "ENERGY.............MEDIUM.HIGH",
+                    "MOOD...............CONCENTRATED",
+                    "GOAL...............ORIENTED",
+                    "DISTRACTIONS.......IGNORED",
+                    "PRODUCTIVITY.......PEAK"
+                ]
+            },
+            {
+                name: "WITH.FRIENDS.SOCIAL",
+                animation: "social",
+                left: [
+                    "EVENT..............POETRY.SALON",
+                    "COMPANY............FEMINIST.ARTISTS",
+                    "BEVERAGE...........WINE.GLASS",
+                    "CONVERSATION.......ANIMATED",
+                    "DEVICE.............PHONE.AWAY",
+                    "ATMOSPHERE.........CREATIVE",
+                    "ENGAGEMENT.........ACTIVE"
+                ],
+                right: [
+                    "MOOD...............ENGAGED.HAPPY",
+                    "COMMUNICATION......EXPRESSIVE",
+                    "ENERGY.............HIGH.SOCIAL",
+                    "INSPIRATION........CREATIVE.MODE",
+                    "AUTHENTICITY.......GENUINE",
+                    "CONNECTION.........DEEP",
+                    "VULNERABILITY......OPEN"
+                ]
+            },
+            {
+                name: "COMMUTING.CONTEMPLATIVE",
+                animation: "walking",
+                left: [
+                    "ACTIVITY...........WALKING.HOME",
+                    "AUDIO..............EARBUDS.MUSIC",
+                    "ENVIRONMENT........PARIS.STREETS",
+                    "TIME...............EVENING",
+                    "PACE...............STEADY",
+                    "OBSERVATION........SURROUNDINGS",
+                    "PURPOSE............TRANSIT"
+                ],
+                right: [
+                    "STATE..............REFLECTIVE",
+                    "PROCESSING.........MENTAL.DAY",
+                    "RHYTHM.............STEADY.PACE",
+                    "AWARENESS..........OBSERVANT",
+                    "PLANNING...........TOMORROW",
+                    "MOOD...............CONTEMPLATIVE",
+                    "ENERGY.............BALANCED"
+                ]
+            },
+            {
+                name: "TIRED.NEEDS.SUPPORT",
+                animation: "tired",
+                left: [
+                    "LOCATION...........HOME.COUCH",
+                    "POSTURE............SLUMPED",
+                    "ACTIVITY...........MINDLESS.SCROLL",
+                    "SCENT..............OUD.CANDLE",
+                    "LIGHTING...........DIM",
+                    "COMFORT............SEEKING",
+                    "ENERGY.............DEPLETED"
+                ],
+                right: [
+                    "ENERGY.............VERY.LOW",
+                    "MOOD...............DRAINED",
+                    "NEEDS..............COMFORT.CONTENT",
+                    "VULNERABILITY......HIGH",
+                    "DECISION.MAKING....IMPAIRED",
+                    "IMPULSE.CONTROL....REDUCED",
+                    "SUPPORT.SEEKING....ACTIVE"
+                ]
+            }
+        ];
+        
+        /* ===============================
+           Continuous streaming helpers
+        ===============================*/
+        // Hold active intervals so we can clear them when switching modes/scenarios
+        let streamingIntervals = [];
+
+        // Clears all active streaming intervals
+        function clearStreaming() {
+            streamingIntervals.forEach(id => clearInterval(id));
+            streamingIntervals = [];
+        }
+
+        // Continuously streams lines into a target element
+        // element  – the DOM node to write into
+        // lines    – an array of strings to cycle through
+        // delay    – ms between lines (default 400)
+        function streamLines(element, lines, delay = 400) {
+            element.innerHTML = '';
+            let index = 0;
+            const intervalId = setInterval(() => {
+                // Build new line
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'terminal-line';
+                lineDiv.innerHTML = `<span class="terminal-prompt">></span> <span class="terminal-value">${lines[index]}</span>`;
+                element.appendChild(lineDiv);
+
+                // Simple reveal animation
+                createRevealAnimation(element, lines[index], index);
+
+                // Keep container from growing indefinitely
+                if (element.childNodes.length > 50) {
+                    element.removeChild(element.firstChild);
+                }
+
+                // Advance / loop index
+                index = (index + 1) % lines.length;
+            }, delay);
+            streamingIntervals.push(intervalId);
+        }
+        
+        function createRevealAnimation(element, line, index) {
+            const rect = document.createElement('div');
+            rect.className = 'reveal-animation';
+            rect.style.left = '0px';
+            rect.style.top = (index * 16) + 'px';
+            rect.style.width = '4px';
+            rect.style.height = '12px';
+            element.appendChild(rect);
+            
+            setTimeout(() => {
+                rect.remove();
+            }, 800);
+        }
+        
+        function typeLineWithReveal(element, lines, startDelay = 0) {
+            element.innerHTML = '';
+            
+            lines.forEach((line, index) => {
+                setTimeout(() => {
+                    const lineDiv = document.createElement('div');
+                    lineDiv.className = 'terminal-line';
+                    lineDiv.innerHTML = `<span class="terminal-prompt">></span> <span class="terminal-value">${line}</span>`;
+                    element.appendChild(lineDiv);
+                    
+                    createRevealAnimation(element, line, index);
+                }, startDelay + (index * 150));
+            });
+        }
+        
+        function showStaticProfile() {
+            const leftPanel = document.getElementById('left-panel');
+            const rightPanel = document.getElementById('right-panel');
+            const bottomLeft = document.getElementById('bottom-left-panel');
+            const bottomRight = document.getElementById('bottom-right-panel');
+
+            // Stop any previous streaming
+            clearStreaming();
+
+            // Hide dynamic panels
+            bottomLeft.classList.remove('visible');
+            bottomRight.classList.remove('visible');
+
+            // Show static panels
+            setTimeout(() => {
+                leftPanel.classList.add('visible');
+                streamLines(document.getElementById('left-content'), staticData.left);
+            }, 300);
+
+            setTimeout(() => {
+                rightPanel.classList.add('visible');
+                streamLines(document.getElementById('right-content'), staticData.right);
+            }, 800);
+        }
+        
+        function showDynamicScenario(scenarioIndex) {
+            const scenario = dynamicScenarios[scenarioIndex];
+            const leftPanel = document.getElementById('left-panel');
+            const rightPanel = document.getElementById('right-panel');
+            const bottomLeft = document.getElementById('bottom-left-panel');
+            const bottomRight = document.getElementById('bottom-right-panel');
+            const scenarioIndicator = document.getElementById('scenario-indicator');
+
+            // Stop any previous streaming before updating panels
+            clearStreaming();
+
+            // Hide static panels
+            leftPanel.classList.remove('visible');
+            rightPanel.classList.remove('visible');
+
+            // Update scenario indicator
+            scenarioIndicator.textContent = scenario.name;
+            scenarioIndicator.classList.add('visible');
+
+            // Set animation for this scenario
+            setAnimation(scenario.animation);
+
+            // Show dynamic panels with continuous streaming
+            setTimeout(() => {
+                bottomLeft.classList.add('visible');
+                streamLines(document.getElementById('bottom-left-content'), scenario.left);
+            }, 300);
+
+            setTimeout(() => {
+                bottomRight.classList.add('visible');
+                streamLines(document.getElementById('bottom-right-content'), scenario.right);
+            }, 600);
+        }
+        
+        function switchMode() {
+            const flash = document.getElementById('transition-flash');
+            const modeIndicator = document.getElementById('mode-indicator');
+            const statusBar = document.getElementById('status-bar');
+            const scenarioIndicator = document.getElementById('scenario-indicator');
+            
+            // Use the transition effect instead of just a flash
+            if (currentMode === 'static') {
+                currentMode = 'dynamic';
+                modeIndicator.textContent = 'DYNAMIC.CONTEXT.MODE';
+                statusBar.textContent = 'PROCESSING.BEHAVIORAL.PATTERNS...';
+                
+                // Use transitionTo instead of directly setting animation
+                transitionTo(dynamicScenarios[0].animation);
+                currentScenario = 0;
+                
+                // Show the scenario indicator after transition completes
+                setTimeout(() => {
+                    scenarioIndicator.textContent = dynamicScenarios[0].name;
+                    scenarioIndicator.classList.add('visible');
+                    showDynamicScenario(0);
+                }, 1000);
+                
+            } else {
+                currentMode = 'static';
+                modeIndicator.textContent = 'STATIC.PROFILE.MODE';
+                statusBar.textContent = 'BUILDING.STATIC.PROFILE...';
+                scenarioIndicator.classList.remove('visible');
+                
+                // Use transitionTo for idle animation
+                transitionTo('idle');
+                
+                // Show static profile after transition completes
+                setTimeout(() => {
+                    showStaticProfile();
+                }, 1000);
+            }
+        }
+        
+        function switchScenario(scenarioIndex) {
+            if (currentMode === 'dynamic' && scenarioIndex >= 0 && scenarioIndex < dynamicScenarios.length) {
+                currentScenario = scenarioIndex;
+                const scenario = dynamicScenarios[scenarioIndex];
+                
+                // Update scenario indicator text
+                const scenarioIndicator = document.getElementById('scenario-indicator');
+                scenarioIndicator.textContent = scenario.name;
+                
+                // Use transitionTo for smooth animation change
+                transitionTo(scenario.animation);
+                
+                // Update data panels after transition is mostly complete
+                setTimeout(() => {
+                    showDynamicScenario(scenarioIndex);
+                }, 800);
+            }
+        }
+        
+        // Modify keyboard handlers to use both switchMode and transitionTo appropriately
+        document.addEventListener('keydown', (event) => {
+            switch(event.code) {
+                case 'Space':
+                    event.preventDefault();
+                    switchMode(); // Use the enhanced switchMode instead
+                    break;
+                case 'Digit1':
+                    if (currentMode === 'dynamic') switchScenario(0);
+                    break;
+                case 'Digit2':
+                    if (currentMode === 'dynamic') switchScenario(1);
+                    break;
+                case 'Digit3':
+                    if (currentMode === 'dynamic') switchScenario(2);
+                    break;
+                case 'Digit4':
+                    if (currentMode === 'dynamic') switchScenario(3);
+                    break;
+            }
+        });
+        
+        function createDataStream() {
+            const streams = [
+                'USER.PROFILE.SYNC',
+                'BEHAVIORAL.ANALYSIS',
+                'CONTEXT.UPDATE',
+                'PREFERENCE.MATRIX',
+                'MOOD.DETECTION'
+            ];
+            
+            const stream = document.createElement('div');
+            stream.className = 'data-stream';
+            stream.textContent = streams[Math.floor(Math.random() * streams.length)];
+            stream.style.top = Math.random() * 100 + '%';
+            stream.style.left = (Math.random() * 40 - 20) + '%'; // Random horizontal offset
+            stream.style.opacity = Math.random() * 0.4 + 0.2; // Random opacity for more visual interest
+            stream.style.animationDelay = Math.random() * 2 + 's';
+            stream.style.animationDuration = (Math.random() * 4 + 8) + 's'; // Slower, varied animation speed
+            
+            document.getElementById('ui-overlay').appendChild(stream);
+            
+            setTimeout(() => stream.remove(), 12000); // Longer lifetime
+        }
+        
+        // Auto-cycle dynamic scenarios
+        function autoCycleDynamic() {
+            setInterval(() => {
+                if (currentMode === 'dynamic') {
+                    const nextScenario = (currentScenario + 1) % dynamicScenarios.length;
+                    switchScenario(nextScenario);
+                }
+            }, 12000); // Increased time between transitions to allow for longer animations
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Initialize
+        initThreeJS();
+        
+        // Start with static profile
+        setTimeout(() => {
+            showStaticProfile();
+        }, 1000);
+        
+        // Start effects
+        setInterval(createDataStream, 2000);
+        autoCycleDynamic();
+    </script>
+</body>
+</html>

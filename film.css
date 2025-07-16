@@ -1,0 +1,243 @@
+/* Global film styles – extracted from ai_context_demo.html */
+body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    color: #fff;
+}
+
+#container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#three-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#ui-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.terminal-text {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.terminal-text.visible {
+    opacity: 1;
+}
+
+.terminal-header {
+    font-size: 12px;
+    margin-bottom: 8px;
+    color: #cccccc;
+}
+
+.terminal-line {
+    margin: 2px 0;
+    white-space: nowrap;
+}
+
+.terminal-prompt {
+    color: #888;
+}
+
+.terminal-value {
+    color: #ffffff;
+}
+
+.left-panel {
+    left: 30px;
+    top: 100px;
+    width: 300px;
+}
+
+.right-panel {
+    right: 30px;
+    top: 100px;
+    width: 300px;
+}
+
+.bottom-left-panel {
+    left: 30px;
+    bottom: 80px;
+    width: 300px;
+}
+
+.bottom-right-panel {
+    right: 30px;
+    bottom: 80px;
+    width: 300px;
+}
+
+.reveal-animation {
+    position: absolute;
+    background: #ffffff;
+    opacity: 0;
+    animation: revealText 0.8s ease-out forwards;
+}
+
+@keyframes revealText {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+.title {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: #fff;
+    letter-spacing: 3px;
+    z-index: 20;
+}
+
+.user-id {
+    position: absolute;
+    top: 52px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: #888;
+    z-index: 20;
+}
+
+.mode-indicator {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #00ff41;
+    z-index: 20;
+}
+
+.status-bar {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: #666;
+    z-index: 20;
+}
+
+.controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: #444;
+    text-align: center;
+    z-index: 20;
+}
+
+.scenario-indicator {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #ffffff;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.scenario-indicator.visible {
+    opacity: 1;
+}
+
+.cursor {
+    display: inline-block;
+    background: #ffffff;
+    width: 8px;
+    height: 12px;
+    animation: blink 1s infinite;
+    margin-left: 2px;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+.ascii-art {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-size: 8px;
+    color: #333;
+    line-height: 1;
+    z-index: 2;
+}
+
+.data-stream {
+    position: absolute;
+    font-size: 8px;
+    color: #00ff41;
+    opacity: 0.3;
+    animation: stream 6s linear infinite;
+    z-index: 2;
+}
+
+@keyframes stream {
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-100vw); }
+}
+
+.transition-flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 255, 65, 0.05);
+    opacity: 0;
+    z-index: 15;
+    transition: opacity 0.3s ease;
+}
+
+.transition-flash.active {
+    opacity: 1;
+}
+
+/* Global overlay used by sceneManager */
+#transition-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 255, 65, 0.05);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 999;
+    transition: opacity 0.3s ease;
+}
+#transition-mask.flash { opacity: 1; } 

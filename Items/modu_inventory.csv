@@ -1,0 +1,21 @@
+ProductID,Name,Category,Description,Price,Size,Color,Material,Sustainability,InStock,ImageURL
+101,Modular Denim Jacket,Outerwear,"Classic denim jacket with detachable sleeves and collar.",85.00,S/M/L/XL,Blue,100% Organic Cotton,Yes,15,https://modu.com/images/101.jpg
+102,Convertible Cargo Pants,Bottoms,"Cargo pants that transform into shorts. Multiple pockets.",69.00,S/M/L/XL,Khaki,Recycled Polyester,Yes,20,https://modu.com/images/102.jpg
+103,Layered Cotton Tee,Tops,"Soft touch modular tee with removable panels.",35.00,XS/S/M/L,White,Organic Cotton,Yes,30,https://modu.com/images/103.jpg
+104,Reversible Modular Skirt,Bottoms,"Skirt with reversible fabric panels for two looks in one.",55.00,XS/S/M/L/XL,Black/White,Organic Cotton/Viscose,Yes,10,https://modu.com/images/104.jpg
+105,Adjustable Belt Bag,Accessories,"Belt bag with interchangeable straps and pouches.",45.00,One Size,Olive,Recycled Nylon,Yes,25,https://modu.com/images/105.jpg
+106,Essential Hoodie,Tops,"Oversized hoodie with customizable patch options.",60.00,S/M/L/XL,Grey,Organic Cotton Blend,Yes,18,https://modu.com/images/106.jpg
+107,Chunky Knit Scarf,Accessories,"Modular scarf with attachable glove pockets.",28.00,One Size,Beige,Bamboo Fiber,Yes,22,https://modu.com/images/107.jpg
+108,Packable Raincoat,Outerwear,"Raincoat with modular hood and sleeves for weather adaptation.",110.00,S/M/L/XL,Yellow,Recycled PET,Yes,8,https://modu.com/images/108.jpg
+109,Mix & Match Sneakers,Shoes,"Sneakers with removable, color-change panels.",95.00,36/37/38/39/40,White/Custom,Recycled Rubber,Yes,12,https://modu.com/images/109.jpg
+110,Minimalist Tank Dress,Dresses,"Versatile tank dress with modular waist tie.",48.00,XS/S/M/L,Black,Organic Cotton,Yes,15,https://modu.com/images/110.jpg
+111,Urban Modular Blazer,Outerwear,"Contemporary blazer with detachable lining and cuffs.",120.00,S/M/L/XL,Navy,Recycled Polyester,Yes,10,https://modu.com/images/111.jpg
+112,Tailored Wide-leg Trousers,Bottoms,"Elegant wide-leg trousers with adjustable hem.",62.00,S/M/L/XL,Charcoal,Organic Cotton,Yes,16,https://modu.com/images/112.jpg
+113,Contrast Stitch Shirt,Tops,"Button-down with bold contrast stitching and modular collar.",49.00,XS/S/M/L,Light Blue,Organic Linen,Yes,17,https://modu.com/images/113.jpg
+114,Utility Pocket Dress,Dresses,"Shirt dress with detachable utility pockets and waist belt.",75.00,XS/S/M/L,Olive,Recycled Cotton,Yes,11,https://modu.com/images/114.jpg
+115,Foldable City Tote,Bags,"Large tote with packable design, interchangeable straps.",38.00,One Size,Black,Recycled Nylon,Yes,27,https://modu.com/images/115.jpg
+116,Cropped Puffer Vest,Outerwear,"Lightweight vest with removable hood.",68.00,S/M/L/XL,Silver,GRS-certified Recycled Polyester,Yes,14,https://modu.com/images/116.jpg
+117,Modu Sport Leggings,Bottoms,"High-stretch leggings with modular length.",40.00,XS/S/M/L/XL,Burgundy,Recycled Nylon,Yes,30,https://modu.com/images/117.jpg
+118,Longline Modular Cardigan,Tops,"Cardigan with detachable sleeves and adjustable length.",55.00,S/M/L/XL,Camel,Organic Cotton,Yes,13,https://modu.com/images/118.jpg
+119,Hybrid Slip-On Loafers,Shoes,"Loafers with optional back strap for two-way styling.",80.00,36/37/38/39/40,Tan,Plant-based Leather,Yes,13,https://modu.com/images/119.jpg
+120,Graphic Modular Bandana,Accessories,"Bandana that snaps into scarves, hats, or bags.",22.00,One Size,Assorted,Organic Cotton,Yes,40,https://modu.com/images/120.jpg
