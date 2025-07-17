@@ -2,7 +2,8 @@
 const sceneDefs = [
   () => import('./scenes/scannerScene.js'),   // scanning scene appears first
   () => import('./scenes/aiContextScene.js'), // original context scene
-  () => import('./scenes/businessScene.js')   // business intelligence dashboard
+  () => import('./scenes/businessScene.js'),  // business intelligence dashboard
+  () => import('./scenes/adaptiveBrandScene.js') // adaptive brand design system
 ];
 
 let currentHandle = null;
@@ -10,10 +11,36 @@ let currentIdx = 0;
 const container = document.getElementById('scene-container');
 const mask = document.getElementById('transition-mask');
 
+// Add transition styles
+const transitionStyles = document.createElement('style');
+transitionStyles.textContent = `
+  .scene-transitioning-out {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  
+  .scene-transitioning-in {
+    opacity: 0;
+    transform: scale(1.05);
+    transition: opacity 0.6s ease-in, transform 0.6s ease-in;
+  }
+  
+  .scene-active {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.6s ease-in, transform 0.6s ease-in;
+  }
+`;
+document.head.appendChild(transitionStyles);
+
 async function loadScene(idx) {
-  // Trigger flash
-  mask.classList.add('flash');
-  await new Promise(r => setTimeout(r, 120));
+  // Start smooth transition out
+  if (container.firstChild) {
+    container.firstChild.classList.add('scene-transitioning-out');
+    // Wait for fade out to complete
+    await new Promise(r => setTimeout(r, 600));
+  }
 
   // Teardown previous scene if any
   if (currentHandle && typeof currentHandle.teardown === 'function') {
@@ -21,16 +48,25 @@ async function loadScene(idx) {
   }
   container.innerHTML = '';
 
+  // Create a wrapper for the new scene
+  const sceneWrapper = document.createElement('div');
+  sceneWrapper.classList.add('scene-transitioning-in');
+  container.appendChild(sceneWrapper);
+
   // Lazy-load and mount next scene
   const mod = await sceneDefs[idx]();
   if (!mod || typeof mod.setup !== 'function') {
     console.error('Scene module missing setup() export');
     return;
   }
-  currentHandle = await mod.setup(container);
-
-  // Fade back in
-  setTimeout(() => mask.classList.remove('flash'), 120);
+  currentHandle = await mod.setup(sceneWrapper);
+  
+  // Force a reflow to ensure transitions work
+  void sceneWrapper.offsetWidth;
+  
+  // Transition in
+  sceneWrapper.classList.remove('scene-transitioning-in');
+  sceneWrapper.classList.add('scene-active');
 }
 
 // Simple key control: Space cycles through scenes

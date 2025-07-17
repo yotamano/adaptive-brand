@@ -1,4 +1,4 @@
-// scenes/scannerScene.js – shows a quick scan of 1.png then builds a static T-pose point-cloud model
+// scenes/scannerScene.js – shows a quick scan of 1.jpg then builds a static T-pose point-cloud model
 
 export async function setup(root) {
   const wrapper = document.createElement('div');
@@ -39,7 +39,7 @@ export async function setup(root) {
   scene.background = new THREE.Color(0x000000);
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(0, 1.5, 3);
+  camera.position.set(0, 0, 4); // match ai-context starting position
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -65,8 +65,8 @@ export async function setup(root) {
   }
   window.addEventListener('resize', onResize);
 
-  // --- Load target texture plane (1.png) ---
-  const tex = await new THREE.TextureLoader().loadAsync('1.png');
+  // --- Load target texture plane (1.jpg) ---
+  const tex = await new THREE.TextureLoader().loadAsync('1.jpg');
   const geometry = new THREE.PlaneGeometry(1.5, 1.5 * tex.image.height / tex.image.width);
   const material = new THREE.MeshBasicMaterial({ map: tex });
   const plane = new THREE.Mesh(geometry, material);
@@ -90,7 +90,7 @@ export async function setup(root) {
     // Replace mesh with point cloud as in other scene
     fbx.traverse((child) => {
       if (child.isMesh) {
-        const pc = createSkinnedPointCloud(child, { size: 2.0, color: 0xffffff, skip: 4 });
+        const pc = createSkinnedPointCloud(child, { size: 2.0, color: 0xffffff, skip: 50 }); // match ai-context density
         child.parent.add(pc);
         child.parent.remove(child);
       }
@@ -99,6 +99,19 @@ export async function setup(root) {
     figure.scale.setScalar(1.3);
     figure.position.set(0, -1, 0);
     scene.add(figure);
+
+    // Centre the model exactly like in aiContext
+    const box   = new THREE.Box3().setFromObject( fbx );
+    const size  = new THREE.Vector3();
+    const pivot = new THREE.Vector3();
+    box.getSize( size );
+    box.getCenter( pivot );
+
+    // Move model so its centre is on the world origin
+    fbx.position.sub( pivot );
+
+    // Drop it so the “feet” sit roughly on Y = –1
+    fbx.position.y = -1;
 
     // Leave model in T-pose (first frame) by not starting an animation.
   }
@@ -125,8 +138,10 @@ export async function setup(root) {
 
     // Subtle camera movement & lookAt when figure exists
     if (figure) {
-      const camTime = Date.now() * 0.0002;
-      camera.position.x = Math.sin(camTime) * 0.05;
+      const time = Date.now() * 0.0002;
+      camera.position.x = Math.sin(time) * 0.03;
+      camera.position.y = Math.sin(time * 0.3) * 0.02;
+      camera.position.z = 4 + Math.sin(time * 0.5) * 0.05;
       camera.lookAt(figure.position);
 
       // Update point cloud uniform time

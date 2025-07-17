@@ -119,6 +119,9 @@ export async function setup(root) {
       color: #00ff41;
       letter-spacing: 4px;
       z-index: 20;
+      animation: fadeInFromTop 0.6s forwards;
+      opacity: 0;
+      animation-delay: 0.1s;
     }
     
     #business-scene .subtitle {
@@ -130,6 +133,9 @@ export async function setup(root) {
       color: #888;
       letter-spacing: 2px;
       z-index: 20;
+      animation: fadeInFromTop 0.6s forwards;
+      opacity: 0;
+      animation-delay: 0.2s;
     }
     
     #business-scene .mode-indicator {
@@ -140,6 +146,9 @@ export async function setup(root) {
       font-size: 9px;
       color: #00ff41;
       z-index: 20;
+      animation: fadeInFromTop 0.6s forwards;
+      opacity: 0;
+      animation-delay: 0.3s;
     }
     
     /* Main Content */
@@ -160,6 +169,17 @@ export async function setup(root) {
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      opacity: 0;
+    }
+    
+    #business-scene .left-table {
+      animation: fadeInFromLeft 0.8s forwards;
+      animation-delay: 0.3s;
+    }
+    
+    #business-scene .right-table {
+      animation: fadeInFromRight 0.8s forwards;
+      animation-delay: 0.3s;
     }
     
     #business-scene .table-header {
@@ -301,6 +321,9 @@ export async function setup(root) {
       border: 1px solid #333;
       padding: 8px 20px;
       border-radius: 4px;
+      opacity: 0;
+      animation: fadeInFromBottom 0.6s forwards;
+      animation-delay: 0.5s;
     }
     
     #business-scene .metric-item {
@@ -332,6 +355,9 @@ export async function setup(root) {
       font-size: 7px;
       color: #444;
       text-align: center;
+      opacity: 0;
+      animation: fadeIn 0.6s forwards;
+      animation-delay: 0.7s;
     }
     
     #business-scene .cursor {
@@ -351,6 +377,56 @@ export async function setup(root) {
     @keyframes pulse {
       0%, 100% { opacity: 0.7; }
       50% { opacity: 1; }
+    }
+    
+    /* Scene transition animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes fadeInFromTop {
+      from { 
+        opacity: 0;
+        transform: translateY(-20px) translateX(-50%);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+      }
+    }
+    
+    @keyframes fadeInFromBottom {
+      from { 
+        opacity: 0;
+        transform: translateY(20px) translateX(-50%);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+      }
+    }
+    
+    @keyframes fadeInFromLeft {
+      from { 
+        opacity: 0;
+        transform: translateX(-40px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes fadeInFromRight {
+      from { 
+        opacity: 0;
+        transform: translateX(40px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
     
     /* Scrollbar styling */
@@ -398,8 +474,6 @@ export async function setup(root) {
       }
     }
     
-    /* Animation removed as requested */
-    
     /* Fade in animation for new rows */
     .fade-in-row {
       opacity: 0;
@@ -432,6 +506,78 @@ export async function setup(root) {
       100% {
         opacity: 1;
         transform: translateX(0);
+      }
+    }
+    
+    /* Enhanced exit animations for scene transitions */
+    .scene-exit .title,
+    .scene-exit .subtitle,
+    .scene-exit .mode-indicator {
+      animation: fadeOutToTop 0.4s forwards;
+    }
+    
+    .scene-exit .left-table {
+      animation: fadeOutToLeft 0.4s forwards;
+    }
+    
+    .scene-exit .right-table {
+      animation: fadeOutToRight 0.4s forwards;
+    }
+    
+    .scene-exit .metrics-bar {
+      animation: fadeOutToBottom 0.4s forwards;
+    }
+    
+    .scene-exit .controls {
+      animation: fadeOut 0.3s forwards;
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    @keyframes fadeOutToTop {
+      from { 
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+      }
+      to { 
+        opacity: 0;
+        transform: translateY(-20px) translateX(-50%);
+      }
+    }
+    
+    @keyframes fadeOutToBottom {
+      from { 
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+      }
+      to { 
+        opacity: 0;
+        transform: translateY(20px) translateX(-50%);
+      }
+    }
+    
+    @keyframes fadeOutToLeft {
+      from { 
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to { 
+        opacity: 0;
+        transform: translateX(-40px);
+      }
+    }
+    
+    @keyframes fadeOutToRight {
+      from { 
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to { 
+        opacity: 0;
+        transform: translateX(40px);
       }
     }
   `;
@@ -662,11 +808,18 @@ export async function setup(root) {
   return {
     teardown() {
       try {
+        // Add exit animations before actual removal
+        wrapper.classList.add('scene-exit');
+        
         // Clear the intervals we created
         intervals.forEach(id => clearInterval(id));
         intervals = [];
-        wrapper.remove();
-        style.remove();
+        
+        // Allow time for exit animations to complete
+        setTimeout(() => {
+          wrapper.remove();
+          style.remove();
+        }, 400);
       } catch(e) { 
         console.warn('Business scene teardown error:', e);
       }
