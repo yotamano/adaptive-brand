@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const valueDisplay = slider.parentElement.querySelector('.value-display');
         
         let isDragging = false;
-        let currentValue = 0; // Start at first image
+        // Start each slider at a random location so they are out of phase
+        let currentValue = Math.random() * 100;
         
         function updateSlider(percentage) {
             percentage = Math.max(0, Math.min(100, percentage));
@@ -118,7 +119,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // --- Automatic random animation loop ---
         let direction = Math.random() < 0.5 ? 1 : -1; // 1 = toward 100, -1 = toward 0
         let targetValue = direction === 1 ? 100 : 0; // first target is an endpoint
-        const speedPerFrame = 1.5; // faster constant speed (~90 %/sec)
+
+        // Pick a random speed for this leg (percent per frame)
+        const minSpeed = 0.8;   // ~48 % per second
+        const maxSpeed = 2.2;   // ~130 % per second
+        const randomSpeed = () => minSpeed + Math.random() * (maxSpeed - minSpeed);
+        let speedPerFrame = randomSpeed();
 
         function animateSlider() {
             if (!isDragging) {
@@ -128,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentValue = targetValue;
                     direction *= -1;
                     targetValue = direction === 1 ? 100 : 0;
+                    speedPerFrame = randomSpeed(); // new random speed for next sweep
                 } else {
                     currentValue += direction * speedPerFrame;
                 }
@@ -135,6 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             requestAnimationFrame(animateSlider);
         }
+        // Initialize slider at its random starting point
+        updateSlider(currentValue);
         // Start the animation loop
         requestAnimationFrame(animateSlider);
         // --- End automatic animation loop ---
