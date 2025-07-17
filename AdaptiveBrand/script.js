@@ -125,23 +125,37 @@ document.addEventListener('DOMContentLoaded', function() {
         const maxSpeed = 2.2;   // ~130 % per second
         const randomSpeed = () => minSpeed + Math.random() * (maxSpeed - minSpeed);
         let speedPerFrame = randomSpeed();
+        let isPaused = false;
 
         function animateSlider() {
             if (!isDragging) {
-                const diff = targetValue - currentValue;
-                if (Math.abs(diff) <= speedPerFrame) {
-                    // Snap exactly to endpoint then reverse direction
-                    currentValue = targetValue;
-                    direction *= -1;
-                    targetValue = direction === 1 ? 100 : 0;
-                    speedPerFrame = randomSpeed(); // new random speed for next sweep
+                if (isPaused) {
+                    // Animation is paused, do nothing this frame.
                 } else {
-                    currentValue += direction * speedPerFrame;
+                    const diff = targetValue - currentValue;
+                    if (Math.abs(diff) <= speedPerFrame) {
+                        // === Reached Endpoint: Snap, Pause, and Reverse ===
+                        currentValue = targetValue;
+                        isPaused = true;
+
+                        const pauseDurationMs = 1000 + Math.random() * 1500; // 1-2.5 sec
+                        setTimeout(() => {
+                            direction *= -1;
+                            targetValue = direction === 1 ? 100 : 0;
+                            speedPerFrame = randomSpeed(); // New speed for the return trip
+                            isPaused = false; // Resume
+                        }, pauseDurationMs);
+
+                    } else {
+                        // === Still Moving ===
+                        currentValue += direction * speedPerFrame;
+                    }
+                    updateSlider(currentValue);
                 }
-                updateSlider(currentValue);
             }
             requestAnimationFrame(animateSlider);
         }
+
         // Initialize slider at its random starting point
         updateSlider(currentValue);
         // Start the animation loop

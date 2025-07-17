@@ -70,7 +70,7 @@ export async function setup(root) {
 
   // --- Create Init Button ---
   const initButton = document.createElement('button');
-  initButton.textContent = 'Initialize Scan';
+  initButton.textContent = 'Initialize Self-Agent';
   initButton.style.position = 'absolute';
   initButton.style.top = '50%';
   initButton.style.left = '50%';
@@ -164,8 +164,8 @@ export async function setup(root) {
       }
     });
     figure = fbx;
-    figure.scale.setScalar(1.3);
-    figure.position.set(0, -1, 0);
+    figure.scale.setScalar(1.8); // Make model bigger
+    figure.position.set(0, 10, 0); // Center the model vertically
     scene.add(figure);
     
     const box = new THREE.Box3().setFromObject(fbx);
@@ -204,11 +204,16 @@ export async function setup(root) {
     frameId = requestAnimationFrame(animate);
 
     if (figure) {
+      // Rotate the figure
+      figure.rotation.y += 0.005;
+
+      /*
       const time = Date.now() * 0.0002;
       camera.position.x = Math.sin(time) * 0.03;
       camera.position.y = Math.sin(time * 0.3) * 0.02;
       camera.position.z = 4 + Math.sin(time * 0.5) * 0.05;
       camera.lookAt(figure.position);
+      */
       
       const elapsed = clock.getElapsedTime();
       figure.traverse((child) => {
