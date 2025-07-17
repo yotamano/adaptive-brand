@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Film Wrapper</title>
+    <link rel="stylesheet" href="film.css" />
+    <!-- Shared libs loaded once -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script src="SkinnedPointCloudShader.js"></script>
+    <style>
+        /* Tiny fallback while film.css is loading */
+        body { margin:0; background:#000; }
+    </style>
+</head>
+<body>
+    <div id="scene-container"></div>
+    <!-- Global transition overlay -->
+    <div id="transition-mask"></div>
+    <script type="module" src="sceneManager.js"></script>
+</body>
+</html> 

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Brands - Scene Manager</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #scene-frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1;
+        }
+        
+        #scene-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .scene-selector {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff41;
+            padding: 15px;
+            font-size: 10px;
+            color: #fff;
+            pointer-events: all;
+            z-index: 20;
+        }
+        
+        .scene-selector h3 {
+            margin: 0 0 10px 0;
+            color: #00ff41;
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+        
+        .scene-button {
+            display: block;
+            width: 200px;
+            margin: 5px 0;
+            padding: 8px 12px;
+            background: #000;
+            border: 1px solid #333;
+            color: #888;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .scene-button:hover {
+            border-color: #00ff41;
+            color: #00ff41;
+            background: rgba(0, 255, 65, 0.1);
+        }
+        
+        .scene-button.active {
+            border-color: #00ff41;
+            color: #000;
+            background: #00ff41;
+        }
+        
+        .scene-description {
+            font-size: 8px;
+            color: #666;
+            margin-top: 2px;
+            line-height: 1.2;
+        }
+        
+        .scene-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #333;
+            padding: 10px;
+            font-size: 8px;
+            color: #888;
+            max-width: 250px;
+            z-index: 20;
+        }
+        
+        .scene-info h4 {
+            margin: 0 0 5px 0;
+            color: #00ff41;
+            font-size: 9px;
+        }
+        
+        .transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 65, 0.1);
+            opacity: 0;
+            z-index: 15;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        
+        .transition-overlay.active {
+            opacity: 1;
+        }
+        
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ff41;
+            font-size: 14px;
+            letter-spacing: 3px;
+            opacity: 0;
+            z-index: 25;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-indicator.visible {
+            opacity: 1;
+        }
+        
+        .cursor {
+            display: inline-block;
+            background: #00ff41;
+            width: 8px;
+            height: 12px;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <iframe id="scene-frame" src="ai_context_demo.html"></iframe>
+        
+        <div id="scene-overlay">
+            <div class="scene-selector">
+                <h3>SCENE.SELECTOR</h3>
+                <button class="scene-button active" data-scene="ai_context_demo.html">
+                    AI.CONTEXT.ANALYSIS
+                    <div class="scene-description">Real-time AI behavioral profiling and dynamic context understanding</div>
+                </button>
+                <button class="scene-button" data-scene="business_dashboard.html">
+                    BUSINESS.INTELLIGENCE
+                    <div class="scene-description">E-commerce operations monitoring with live transaction streams</div>
+                </button>
+                <button class="scene-button" data-scene="scanner_scene.html" style="opacity: 0.5;">
+                    QUANTUM.SCANNER
+                    <div class="scene-description">Advanced 3D scanning interface [IN DEVELOPMENT]</div>
+                </button>
+            </div>
+            
+            <div class="scene-info">
+                <h4>CURRENT.SCENE</h4>
+                <div id="current-scene-info">AI Context Analysis - Behavioral profiling system with dynamic scenario modeling</div>
+                <br>
+                <div style="color: #666; font-size: 7px;">
+                    Click scene buttons to switch • Each scene maintains independent state
+                </div>
+            </div>
+            
+            <div class="transition-overlay" id="transition-overlay"></div>
+            <div class="loading-indicator" id="loading-indicator">
+                LOADING.SCENE<span class="cursor"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sceneFrame = document.getElementById('scene-frame');
+        const transitionOverlay = document.getElementById('transition-overlay');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const sceneInfo = document.getElementById('current-scene-info');
+        const sceneButtons = document.querySelectorAll('.scene-button');
+        
+        let currentScene = 'ai_context_demo.html';
+        
+        const sceneDescriptions = {
+            'ai_context_demo.html': 'AI Context Analysis - Behavioral profiling system with dynamic scenario modeling',
+            'business_dashboard.html': 'Business Intelligence - Real-time e-commerce operations and transaction monitoring',
+            'scanner_scene.html': 'Quantum Scanner - Advanced 3D environmental scanning interface [COMING SOON]'
+        };
+        
+        function switchScene(scenePath) {
+            if (scenePath === currentScene) return;
+            if (scenePath === 'scanner_scene.html') {
+                // Show coming soon message
+                showComingSoon();
+                return;
+            }
+            
+            // Update active button
+            sceneButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.scene === scenePath) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Show transition effect
+            transitionOverlay.classList.add('active');
+            loadingIndicator.classList.add('visible');
+            
+            // Load new scene after a brief delay
+            setTimeout(() => {
+                sceneFrame.src = scenePath;
+                currentScene = scenePath;
+                sceneInfo.textContent = sceneDescriptions[scenePath];
+                
+                // Hide transition effect after scene loads
+                setTimeout(() => {
+                    transitionOverlay.classList.remove('active');
+                    loadingIndicator.classList.remove('visible');
+                }, 1000);
+            }, 500);
+        }
+        
+        function showComingSoon() {
+            loadingIndicator.textContent = 'COMING.SOON';
+            loadingIndicator.classList.add('visible');
+            
+            setTimeout(() => {
+                loadingIndicator.textContent = 'LOADING.SCENE';
+                loadingIndicator.classList.remove('visible');
+            }, 2000);
+        }
+        
+        // Add click handlers to scene buttons
+        sceneButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const scenePath = button.dataset.scene;
+                switchScene(scenePath);
+            });
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            switch(event.code) {
+                case 'Digit1':
+                    if (event.altKey) {
+                        event.preventDefault();
+                        switchScene('ai_context_demo.html');
+                    }
+                    break;
+                case 'Digit2':
+                    if (event.altKey) {
+                        event.preventDefault();
+                        switchScene('business_dashboard.html');
+                    }
+                    break;
+                case 'Digit3':
+                    if (event.altKey) {
+                        event.preventDefault();
+                        switchScene('scanner_scene.html');
+                    }
+                    break;
+            }
+        });
+        
+        // Initialize
+        sceneInfo.textContent = sceneDescriptions[currentScene];
+    </script>
+</body>
+</html> 

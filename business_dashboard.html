@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MODU Business Intelligence Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: #fff;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #flow-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #00ff41;
+            letter-spacing: 4px;
+            z-index: 20;
+        }
+        
+        .subtitle {
+            position: absolute;
+            top: 42px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #888;
+            letter-spacing: 2px;
+            z-index: 20;
+        }
+        
+        .mode-indicator {
+            position: absolute;
+            top: 62px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #00ff41;
+            z-index: 20;
+        }
+        
+        /* Product Flow */
+        .product-stream {
+            position: absolute;
+            font-size: 10px;
+            color: #00ff41;
+            white-space: nowrap;
+            animation: flow-right 15s linear infinite;
+            display: flex;
+            align-items: center;
+            z-index: 3;
+        }
+        
+        .product-image {
+            width: 30px;
+            height: 30px;
+            background: #00ff41;
+            margin-right: 10px;
+            opacity: 0.6;
+            border: 1px solid #00ff41;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .product-data {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        
+        .product-name {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .product-price {
+            color: #00ff41;
+        }
+        
+        .product-stock {
+            color: #888;
+            font-size: 8px;
+        }
+        
+        /* Transaction Flow */
+        .transaction-stream {
+            position: absolute;
+            font-size: 9px;
+            color: #ff6b00;
+            white-space: nowrap;
+            animation: flow-left 12s linear infinite;
+            display: flex;
+            align-items: center;
+            z-index: 3;
+        }
+        
+        .transaction-icon {
+            width: 20px;
+            height: 20px;
+            background: #ff6b00;
+            margin-right: 8px;
+            opacity: 0.7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .transaction-data {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+        
+        .transaction-id {
+            color: #ffffff;
+            font-size: 8px;
+        }
+        
+        .transaction-amount {
+            color: #ff6b00;
+            font-weight: bold;
+        }
+        
+        .transaction-customer {
+            color: #888;
+            font-size: 7px;
+        }
+        
+        @keyframes flow-right {
+            0% { transform: translateX(-100vw); }
+            100% { transform: translateX(100vw); }
+        }
+        
+        @keyframes flow-left {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100vw); }
+        }
+        
+        /* Terminal Panels */
+        .terminal-panel {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            padding: 12px;
+            opacity: 0.9;
+        }
+        
+        .terminal-header {
+            font-size: 10px;
+            margin-bottom: 8px;
+            color: #00ff41;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+        
+        .terminal-line {
+            margin: 2px 0;
+            white-space: nowrap;
+        }
+        
+        .terminal-prompt {
+            color: #888;
+        }
+        
+        .terminal-value {
+            color: #ffffff;
+        }
+        
+        .value-positive {
+            color: #00ff41;
+        }
+        
+        .value-negative {
+            color: #ff4444;
+        }
+        
+        .value-warning {
+            color: #ffaa00;
+        }
+        
+        .top-left-panel {
+            top: 100px;
+            left: 20px;
+            width: 280px;
+        }
+        
+        .top-right-panel {
+            top: 100px;
+            right: 20px;
+            width: 280px;
+        }
+        
+        .bottom-left-panel {
+            bottom: 60px;
+            left: 20px;
+            width: 280px;
+        }
+        
+        .bottom-right-panel {
+            bottom: 60px;
+            right: 20px;
+            width: 280px;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #666;
+            z-index: 20;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: #444;
+            text-align: center;
+            z-index: 20;
+        }
+        
+        .cursor {
+            display: inline-block;
+            background: #00ff41;
+            width: 6px;
+            height: 10px;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .data-stream {
+            position: absolute;
+            font-size: 7px;
+            color: #00ff41;
+            opacity: 0.2;
+            animation: stream 8s linear infinite;
+            z-index: 2;
+        }
+        
+        @keyframes stream {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100vw); }
+        }
+        
+        .inventory-alert {
+            color: #ff4444;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .floating-metric {
+            position: absolute;
+            font-size: 11px;
+            color: #00ff41;
+            opacity: 0;
+            animation: float-up 4s ease-out forwards;
+            z-index: 5;
+        }
+        
+        @keyframes float-up {
+            0% {
+                opacity: 0;
+                transform: translateY(0);
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="flow-container"></div>
+        
+        <div id="ui-overlay">
+            <!-- Header -->
+            <div class="title">MODU.BUSINESS.INTELLIGENCE</div>
+            <div class="subtitle">REALTIME.ECOMMERCE.MONITORING</div>
+            <div class="mode-indicator">LIVE.OPERATIONS.STREAM</div>
+            
+            <!-- Terminal Panels -->
+            <div class="terminal-panel top-left-panel">
+                <div class="terminal-header">REVENUE.ANALYTICS</div>
+                <div id="revenue-content"></div>
+            </div>
+            
+            <div class="terminal-panel top-right-panel">
+                <div class="terminal-header">INVENTORY.STATUS</div>
+                <div id="inventory-content"></div>
+            </div>
+            
+            <div class="terminal-panel bottom-left-panel">
+                <div class="terminal-header">CUSTOMER.INSIGHTS</div>
+                <div id="customer-content"></div>
+            </div>
+            
+            <div class="terminal-panel bottom-right-panel">
+                <div class="terminal-header">PERFORMANCE.METRICS</div>
+                <div id="performance-content"></div>
+            </div>
+            
+            <!-- Status bar -->
+            <div class="status-bar">PROCESSING.LIVE.DATA.STREAMS...</div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                SPACE: PAUSE.STREAMS • R: RESET.METRICS<span class="cursor"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product and transaction data
+        const products = [
+            {id: 101, name: "Modular Denim Jacket", price: 85.00, stock: 15, category: "Outerwear"},
+            {id: 102, name: "Convertible Cargo Pants", price: 69.00, stock: 20, category: "Bottoms"},
+            {id: 103, name: "Layered Cotton Tee", price: 35.00, stock: 30, category: "Tops"},
+            {id: 104, name: "Reversible Modular Skirt", price: 55.00, stock: 10, category: "Bottoms"},
+            {id: 105, name: "Adjustable Belt Bag", price: 45.00, stock: 25, category: "Accessories"},
+            {id: 106, name: "Essential Hoodie", price: 60.00, stock: 18, category: "Tops"},
+            {id: 107, name: "Chunky Knit Scarf", price: 28.00, stock: 22, category: "Accessories"},
+            {id: 108, name: "Packable Raincoat", price: 110.00, stock: 8, category: "Outerwear"},
+            {id: 109, name: "Mix & Match Sneakers", price: 95.00, stock: 12, category: "Shoes"},
+            {id: 110, name: "Minimalist Tank Dress", price: 48.00, stock: 15, category: "Dresses"},
+            {id: 111, name: "Urban Modular Blazer", price: 120.00, stock: 10, category: "Outerwear"},
+            {id: 112, name: "Tailored Wide-leg Trousers", price: 62.00, stock: 16, category: "Bottoms"},
+            {id: 113, name: "Contrast Stitch Shirt", price: 49.00, stock: 17, category: "Tops"},
+            {id: 114, name: "Utility Pocket Dress", price: 75.00, stock: 11, category: "Dresses"},
+            {id: 115, name: "Foldable City Tote", price: 38.00, stock: 27, category: "Bags"},
+            {id: 116, name: "Cropped Puffer Vest", price: 68.00, stock: 14, category: "Outerwear"},
+            {id: 117, name: "Modu Sport Leggings", price: 40.00, stock: 30, category: "Bottoms"},
+            {id: 118, name: "Longline Modular Cardigan", price: 55.00, stock: 13, category: "Tops"},
+            {id: 119, name: "Hybrid Slip-On Loafers", price: 80.00, stock: 13, category: "Shoes"},
+            {id: 120, name: "Graphic Modular Bandana", price: 22.00, stock: 40, category: "Accessories"}
+        ];
+
+        // Business metrics
+        let businessMetrics = {
+            totalRevenue: 12847.50,
+            ordersToday: 47,
+            avgOrderValue: 73.25,
+            conversionRate: 3.2,
+            inventoryValue: 89234.00,
+            lowStockItems: 4,
+            returnsRate: 2.1,
+            customerSatisfaction: 4.6,
+            newCustomers: 23,
+            returningCustomers: 71,
+            topCategory: "Tops",
+            peakHour: "14:00-15:00"
+        };
+
+        // Generate mock customer names and locations
+        const customerNames = [
+            "Emma Laurent", "Sophie Martin", "Lucas Dubois", "Chloe Bernard", 
+            "Antoine Moreau", "Lea Rousseau", "Thomas Petit", "Camille Robert",
+            "Maxime Durand", "Julie Leroy", "Nicolas Simon", "Marion Michel",
+            "Alexandre Muller", "Clara Lefebvre", "Gabriel Garcia", "Manon Roux"
+        ];
+
+        const cities = [
+            "Paris", "Lyon", "Marseille", "Toulouse", "Nice", "Nantes", 
+            "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Tours"
+        ];
+
+        let streamActive = true;
+        let transactionCounter = 1000;
+
+        function generateTransaction() {
+            const product = products[Math.floor(Math.random() * products.length)];
+            const customer = customerNames[Math.floor(Math.random() * customerNames.length)];
+            const city = cities[Math.floor(Math.random() * cities.length)];
+            const quantity = Math.floor(Math.random() * 3) + 1;
+            const amount = product.price * quantity;
+            
+            // Update business metrics
+            businessMetrics.totalRevenue += amount;
+            businessMetrics.ordersToday++;
+            businessMetrics.avgOrderValue = businessMetrics.totalRevenue / businessMetrics.ordersToday;
+            
+            // Reduce stock
+            product.stock = Math.max(0, product.stock - quantity);
+            
+            return {
+                id: ++transactionCounter,
+                productName: product.name,
+                customer: customer,
+                location: city,
+                amount: amount,
+                quantity: quantity,
+                timestamp: new Date().toLocaleTimeString()
+            };
+        }
+
+        function createProductStream() {
+            if (!streamActive) return;
+            
+            const product = products[Math.floor(Math.random() * products.length)];
+            const container = document.getElementById('flow-container');
+            
+            const productDiv = document.createElement('div');
+            productDiv.className = 'product-stream';
+            productDiv.style.top = Math.random() * 70 + 15 + '%';
+            productDiv.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            
+            const stockStatus = product.stock < 15 ? 'LOW' : 'OK';
+            const stockClass = product.stock < 15 ? 'inventory-alert' : '';
+            
+            productDiv.innerHTML = `
+                <div class="product-image">${product.category.charAt(0)}</div>
+                <div class="product-data">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">€${product.price.toFixed(2)}</div>
+                    <div class="product-stock ${stockClass}">STOCK: ${product.stock} [${stockStatus}]</div>
+                </div>
+            `;
+            
+            container.appendChild(productDiv);
+            
+            setTimeout(() => {
+                if (productDiv.parentNode) {
+                    productDiv.remove();
+                }
+            }, 15000);
+        }
+
+        function createTransactionStream() {
+            if (!streamActive) return;
+            
+            const transaction = generateTransaction();
+            const container = document.getElementById('flow-container');
+            
+            const transactionDiv = document.createElement('div');
+            transactionDiv.className = 'transaction-stream';
+            transactionDiv.style.top = Math.random() * 70 + 15 + '%';
+            transactionDiv.style.animationDuration = (Math.random() * 8 + 8) + 's';
+            
+            transactionDiv.innerHTML = `
+                <div class="transaction-icon">€</div>
+                <div class="transaction-data">
+                    <div class="transaction-id">TXN#${transaction.id}</div>
+                    <div class="transaction-amount">€${transaction.amount.toFixed(2)}</div>
+                    <div class="transaction-customer">${transaction.customer} • ${transaction.location}</div>
+                </div>
+            `;
+            
+            container.appendChild(transactionDiv);
+            
+            // Create floating metric
+            createFloatingMetric(`+€${transaction.amount.toFixed(2)}`, 
+                window.innerWidth - 100, Math.random() * window.innerHeight);
+            
+            setTimeout(() => {
+                if (transactionDiv.parentNode) {
+                    transactionDiv.remove();
+                }
+            }, 12000);
+        }
+
+        function createFloatingMetric(text, x, y) {
+            const metric = document.createElement('div');
+            metric.className = 'floating-metric';
+            metric.textContent = text;
+            metric.style.left = x + 'px';
+            metric.style.top = y + 'px';
+            
+            document.getElementById('flow-container').appendChild(metric);
+            
+            setTimeout(() => {
+                if (metric.parentNode) {
+                    metric.remove();
+                }
+            }, 4000);
+        }
+
+        function updateTerminalPanels() {
+            // Revenue Analytics
+            const revenueContent = document.getElementById('revenue-content');
+            revenueContent.innerHTML = `
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">TOTAL.REVENUE.......</span><span class="value-positive">€${businessMetrics.totalRevenue.toFixed(2)}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">ORDERS.TODAY........</span><span class="value-positive">${businessMetrics.ordersToday}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">AVG.ORDER.VALUE.....</span><span class="value-positive">€${businessMetrics.avgOrderValue.toFixed(2)}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">CONVERSION.RATE.....</span><span class="value-positive">${businessMetrics.conversionRate}%</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">PEAK.HOUR...........</span><span class="terminal-value">${businessMetrics.peakHour}</span></div>
+            `;
+
+            // Inventory Status
+            const lowStockProducts = products.filter(p => p.stock < 15);
+            const inventoryContent = document.getElementById('inventory-content');
+            inventoryContent.innerHTML = `
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">TOTAL.VALUE.........</span><span class="value-positive">€${businessMetrics.inventoryValue.toFixed(2)}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">LOW.STOCK.ITEMS.....</span><span class="value-warning">${lowStockProducts.length}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">TOTAL.PRODUCTS......</span><span class="terminal-value">${products.length}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">TOP.CATEGORY........</span><span class="value-positive">${businessMetrics.topCategory}</span></div>
+                ${lowStockProducts.length > 0 ? 
+                    `<div class="terminal-line"><span class="terminal-prompt">></span> <span class="inventory-alert">ALERT.LOW.STOCK.....</span><span class="inventory-alert">${lowStockProducts[0].name}</span></div>` 
+                    : ''
+                }
+            `;
+
+            // Customer Insights
+            const customerContent = document.getElementById('customer-content');
+            customerContent.innerHTML = `
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">NEW.CUSTOMERS.......</span><span class="value-positive">${businessMetrics.newCustomers}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">RETURNING.CUSTOMERS.</span><span class="value-positive">${businessMetrics.returningCustomers}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">SATISFACTION........</span><span class="value-positive">${businessMetrics.customerSatisfaction}/5.0</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">RETURN.RATE.........</span><span class="value-positive">${businessMetrics.returnsRate}%</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">ACTIVE.SESSIONS.....</span><span class="value-positive">${Math.floor(Math.random() * 50 + 150)}</span></div>
+            `;
+
+            // Performance Metrics
+            const performanceContent = document.getElementById('performance-content');
+            const uptime = 99.7 + Math.random() * 0.3;
+            const responseTime = 120 + Math.random() * 50;
+            performanceContent.innerHTML = `
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">UPTIME..............</span><span class="value-positive">${uptime.toFixed(2)}%</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">RESPONSE.TIME.......</span><span class="value-positive">${Math.floor(responseTime)}ms</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">API.CALLS.SEC.......</span><span class="value-positive">${Math.floor(Math.random() * 30 + 45)}</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">CACHE.HIT.RATE......</span><span class="value-positive">${(85 + Math.random() * 10).toFixed(1)}%</span></div>
+                <div class="terminal-line"><span class="terminal-prompt">></span> <span class="terminal-value">ERROR.RATE..........</span><span class="value-positive">${(Math.random() * 0.5).toFixed(3)}%</span></div>
+            `;
+        }
+
+        function createDataStream() {
+            const streams = [
+                'PAYMENT.PROCESSED',
+                'ORDER.CONFIRMED',
+                'INVENTORY.UPDATE',
+                'CUSTOMER.REGISTERED',
+                'PRODUCT.VIEWED',
+                'CART.ABANDONED',
+                'REVIEW.SUBMITTED',
+                'SHIPPING.INITIATED'
+            ];
+            
+            const stream = document.createElement('div');
+            stream.className = 'data-stream';
+            stream.textContent = streams[Math.floor(Math.random() * streams.length)];
+            stream.style.top = Math.random() * 100 + '%';
+            stream.style.animationDelay = Math.random() * 2 + 's';
+            stream.style.animationDuration = (Math.random() * 4 + 6) + 's';
+            
+            document.getElementById('flow-container').appendChild(stream);
+            
+            setTimeout(() => stream.remove(), 8000);
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', (event) => {
+            switch(event.code) {
+                case 'Space':
+                    event.preventDefault();
+                    streamActive = !streamActive;
+                    const statusBar = document.querySelector('.status-bar');
+                    statusBar.textContent = streamActive ? 
+                        'PROCESSING.LIVE.DATA.STREAMS...' : 
+                        'STREAMS.PAUSED...';
+                    break;
+                case 'KeyR':
+                    event.preventDefault();
+                    // Reset some metrics
+                    businessMetrics.totalRevenue = 12847.50;
+                    businessMetrics.ordersToday = 47;
+                    businessMetrics.avgOrderValue = 73.25;
+                    updateTerminalPanels();
+                    break;
+            }
+        });
+
+        // Initialize
+        updateTerminalPanels();
+        
+        // Start streams
+        setInterval(createProductStream, 2000);
+        setInterval(createTransactionStream, 1500);
+        setInterval(createDataStream, 1000);
+        setInterval(updateTerminalPanels, 3000);
+        
+        // Generate random fluctuations in metrics
+        setInterval(() => {
+            businessMetrics.newCustomers += Math.floor(Math.random() * 3);
+            businessMetrics.conversionRate += (Math.random() - 0.5) * 0.1;
+            businessMetrics.conversionRate = Math.max(2.5, Math.min(4.0, businessMetrics.conversionRate));
+        }, 5000);
+    </script>
+</body>
+</html> 
