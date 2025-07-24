@@ -3,9 +3,9 @@ const sceneDefs = [
   () => import('./scenes/scannerScene.js'),   // scanning scene appears first
   () => import('./scenes/aiContextScene.js'), // original context scene
   () => import('./scenes/businessScene.js'),  // business intelligence dashboard
+  () => import('./scenes/claudeLoadingScene.js'), // claude loading demo scene
   () => import('./scenes/whyBrandScene.js'),  // why brand carousel scene
   () => import('./scenes/adaptiveBrandScene.js'), // adaptive brand design system
-  // () => import('./scenes/claudeLoadingScene.js') // claude loading demo scene
 ];
 
 let currentHandle = null;
